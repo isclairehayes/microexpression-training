@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Micro-Expression Training</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.8em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        
+        .image-container {
+            background: #f5f5f5;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            min-height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #expression-image {
+            max-width: 100%;
+            max-height: 350px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .placeholder {
+            color: #999;
+            font-size: 1.2em;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .option-btn {
+            padding: 15px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .option-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .option-btn:active {
+            transform: translateY(0);
+        }
+        
+        .option-btn.correct {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        
+        .option-btn.incorrect {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: white;
+        }
+        
+        .feedback {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .feedback.correct {
+            background: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+        
+        .feedback.incorrect {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+        
+        .next-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .next-btn:active {
+            transform: translateY(0);
+        }
+        
+        .next-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        #loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Micro-Expression Training</h1>
+        <p class="subtitle">Identifica la emoción en cada expresión facial</p>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">Precisión</div>
+                <div class="stat-value" id="accuracy">--%</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Correctas</div>
+                <div class="stat-value" id="correct">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Total</div>
+                <div class="stat-value" id="total">0</div>
+            </div>
+        </div>
+        
+        <div class="image-container">
+            <div id="loading">Cargando imágenes...</div>
+            <img id="expression-image" style="display: none;" />
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+        
+        <div class="options" id="options">
+            <!-- Se llenan dinámicamente -->
+        </div>
+        
+        <button class="next-btn" id="next-btn" onclick="nextImage()">Siguiente Imagen</button>
+    </div>
+
+    <script>
+        const emotions = ['anger', 'contempt', 'disgust', 'fear', 'happiness', 'sadness', 'surprise', 'neutral'];
+        const emotionLabels = {
+            'anger': 'Ira',
+            'contempt': 'Desprecio',
+            'disgust': 'Disgusto',
+            'fear': 'Miedo',
+            'happiness': 'Felicidad',
+            'sadness': 'Tristeza',
+            'surprise': 'Sorpresa',
+            'neutral': 'Neutral'
+        };
+        
+        let imageList = [];
+        let currentImage = null;
+        let stats = {
+            correct: 0,
+            total: 0
+        };
+        let answered = false;
+
+        // Cargar lista de imágenes
+        async function loadImages() {
+            try {
+                const response = await fetch('data/images.json');
+                imageList = await response.json();
+                document.getElementById('loading').style.display = 'none';
+                if (imageList.length > 0) {
+                    createOptions();
+                    nextImage();
+                } else {
+                    document.getElementById('loading').textContent = 'No hay imágenes disponibles todavía. Agrega imágenes a las carpetas de emociones.';
+                }
+            } catch (error) {
+                document.getElementById('loading').textContent = 'Error cargando imágenes. Asegúrate de tener el archivo data/images.json';
+            }
+        }
+
+        function createOptions() {
+            const optionsDiv = document.getElementById('options');
+            emotions.forEach(emotion => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = emotionLabels[emotion];
+                btn.onclick = () => checkAnswer(emotion, btn);
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function nextImage() {
+            if (imageList.length === 0) return;
+            
+            answered = false;
+            currentImage = imageList[Math.floor(Math.random() * imageList.length)];
+            
+            const img = document.getElementById('expression-image');
+            img.src = currentImage.path;
+            img.style.display = 'block';
+            
+            document.getElementById('feedback').className = 'feedback';
+            
+            // Reset botones
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.className = 'option-btn';
+                btn.disabled = false;
+            });
+            
+            document.getElementById('next-btn').disabled = true;
+        }
+
+        function checkAnswer(selected, button) {
+            if (answered) return;
+            answered = true;
+            
+            const correct = selected === currentImage.emotion;
+            const feedback = document.getElementById('feedback');
+            
+            stats.total++;
+            if (correct) {
+                stats.correct++;
+                button.className = 'option-btn correct';
+                feedback.className = 'feedback correct';
+                feedback.textContent = '✓ ¡Correcto! Es ' + emotionLabels[currentImage.emotion];
+            } else {
+                button.className = 'option-btn incorrect';
+                feedback.className = 'feedback incorrect';
+                feedback.textContent = '✗ Incorrecto. Era ' + emotionLabels[currentImage.emotion] + ', no ' + emotionLabels[selected];
+                
+                // Mostrar la correcta
+                document.querySelectorAll('.option-btn').forEach(btn => {
+                    if (btn.textContent === emotionLabels[currentImage.emotion]) {
+                        btn.className = 'option-btn correct';
+                    }
+                });
+            }
+            
+            updateStats();
+            
+            // Deshabilitar todos los botones
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.disabled = true;
+            });
+            
+            document.getElementById('next-btn').disabled = false;
+        }
+
+        function updateStats() {
+            document.getElementById('correct').textContent = stats.correct;
+            document.getElementById('total').textContent = stats.total;
+            const accuracy = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+
+        // Cargar al inicio
+        loadImages();
+    </script>
+</body>
+</html>
